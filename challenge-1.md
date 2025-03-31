@@ -2,12 +2,15 @@
 
 ## Write a simple Bash script that prints “Hello DevOps” along with the current date and time.
 
+
 ```bash
 #!/bin/bash
 echo "Hello World, Current date & time is $(TZ="Asia/Kolkata" date +"%d-%m-%Y %H:%M:%S IST")"
 ```
 
+
 ## Create a script that checks if a website (e.g., https://www.learnxops.com) is reachable using curl or ping. Print a success or failure message.
+
 
 ```bash
 #!/bin/bash
@@ -55,7 +58,9 @@ fi
 * `-n` - Tells ping to send how many number of requests
 * `-w` - Timeout value for a packet
 
+
 ## Write a script that takes a filename as an argument, checks if it exists, and prints the content of the file accordingly.
+
 
 ```bash
 #!/bin/bash
@@ -79,7 +84,9 @@ else
 fi
 ```
 
+
 ## Create a script that lists all running processes and writes the output to a file named process_list.txt.
+
 
 ```bash
 #!/bin/bash
@@ -87,7 +94,9 @@ ps aux >> process_file.txt
 echo "Running Process list saved to process_file.txt"
 ```
 
+
 ## Write a script that installs multiple packages at once (e.g., git, vim, curl). The script should check if each package is already installed before attempting installation.
+
 
 ```bash
 #!/bin/bash
@@ -108,7 +117,9 @@ done
 
 * `dpkg -l` - List the packages concisely.
 
+
 ## Create a script that monitors CPU and memory usage every 5 seconds and logs the results to a file.
+
 
 ```bash
 #!/bin/bash
@@ -130,7 +141,9 @@ done
 
 * `-bn1` - Runs the top command in batch mode `(-b)` for a single iteration `(-n1)`.
 
+
 ## Write a script that automatically deletes log files older than 7 days from /var/log.
+
 
 ```bash
 #!/bin/bash
@@ -143,6 +156,7 @@ find ${dir} -type f -name "*.log" -mtime +7 -delete
 
 
 ## Automate user account creation – Write a script that takes the username as an argument, checks, if the user exists, gives the message “user already exists“ else creates a new user, adds it to a “devops“ group, and sets up a default home directory
+
 
 ```bash
 #!/bin/bash
@@ -174,3 +188,75 @@ else
     echo "ℹ️ Default password: ChangeMe123 (User must change it on first login)"
 fi
 ```
+* `-m` → Creates a home directory.
+
+* `-s /bin/bash` → Sets Bash as the default shell.
+
+* `-g devops` → Adds the user to the devops group.
+
+* Sets a default password (ChangeMe123) and forces a password change on first login.
+
+
+## Use awk or sed in a script to process a log file and extract only error messages.
+
+
+```bash
+#!/bin/bash
+sourceFile="/var/log/syslog"
+logFile="error_logs.log"
+
+if [ -f "${sourceFile}" ]
+then
+    echo "ERROR: Log file ${sourceFile} doesn't exist"
+    exit 1
+fi
+
+echo "Scanning the log file for errors"
+awk '/error|ERROR|Error/ {print}' "${sourceFile}" > "${logFile}"
+
+#sed -n '/error\|ERROR\|Error/p' "${sourceFile}" > "${logFile}"
+echo "ERROR logs are extracted to file ${logFile}"
+```
+
+* `-n` - With -n, only explicitly requested lines (via commands like p) are printed.
+* `p` - Prints the matched lines
+
+
+##  Set up a cron job that runs a script to back up (zip/tar) a directory daily.
+
+```bash
+#!/bin/bash
+direct_path="var/log/files"
+backup_path="/var/log/backup"
+TIMESTAMP=$(date +"%d-%m-%Y")
+backup_file="$backup_path/backup_${TIMESTAMP}.tar.gz"
+
+mkdir -p ${backup_path}
+
+tar -czf "${backup_file}" "${direct_path}"
+#zip -r backup.zip "${direct_path}"
+```
+
+* `-c` - Create a new archive , `-z` - Compress the archive using gzip, `-f` - specify the name of the archive file
+* `-p` - In the `mkdir` command, it ensures that parent directories are created and avoid errors if the directory exists
+
+# Steps to schedule a cron job - 
+
+```bash
+#Open the crontab file for editing
+crontab -e
+
+#Setup Daily cron job and redirect output to a log file
+* 0 * * * backup_file.sh >> /var/log/backup.log 2>&1
+
+#Verify the cron job 
+crontab -l
+```
+
+* `* * * * * script.sh`
+    * Here’s what each field represents:
+        * **Minute**: (0–59)
+        * **Hour**: (0–23)
+        * **Day of Month**: (1–31)
+        * **Month**: (1–12)
+        * **Day of Week**: (0–6, where Sunday = 0)
