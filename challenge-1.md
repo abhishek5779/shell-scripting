@@ -79,7 +79,36 @@ else
 fi
 ```
 
+## Create a script that lists all running processes and writes the output to a file named process_list.txt.
+
+```bash
+#!/bin/bash
+ps aux >> process_file.txt
+echo "Running Process list saved to process_file.txt"
+```
+
 ## Write a script that installs multiple packages at once (e.g., git, vim, curl). The script should check if each package is already installed before attempting installation.
+
+```bash
+#!/bin/bash
+packages=("git" "vim" "curl")
+
+#Check whether package exist or not
+for pkg in ${packages[@]}
+do
+    if dpkg -l | grep -qw "$pkg"
+    then
+        echo "$pkg is already installed"
+    else
+        echo "$pkg is not installed. Installing ...."
+        sudo apt-get install -y $pkg
+    fi
+done
+```
+
+* `dpkh -l` - List the packages concisely.
+
+## Create a script that monitors CPU and memory usage every 5 seconds and logs the results to a file.
 
 ```bash
 
