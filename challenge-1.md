@@ -106,10 +106,71 @@ do
 done
 ```
 
-* `dpkh -l` - List the packages concisely.
+* `dpkg -l` - List the packages concisely.
 
 ## Create a script that monitors CPU and memory usage every 5 seconds and logs the results to a file.
 
 ```bash
+#!/bin/bash
+LOG_FILE="resource_usage.log"
 
+echo "Monitoring CPU and Memory usage in log file ${LOG_FILE}"
+echo "TIMESTAMP | CPU(%)  | MEMORY(%)" > ${LOG_FILE}
+
+while true
+do
+    TIMESTAMP=$(TZ="Asia/Kolkata" date +"%d-%m-%Y %H:%M:%S IST")
+    CPU=$(top -bn1 | grep "Cpu(s)" | awk '{print $2 + $4}')
+    MEMORY=$(free | awk '/Mem/ {print "%.2f", $3/$2 * 100}')
+
+    echo "$TIMESTAMP | $CPU  | $MEMORY" >> ${LOG_FILE}
+    sleep 5
+done
+```
+
+* `-bn1` - Runs the top command in batch mode `(-b)` for a single iteration `(-n1)`.
+
+## Write a script that automatically deletes log files older than 7 days from /var/log.
+
+```bash
+#!/bin/bash
+dir="/var/log"
+find ${dir} -type f -name "*.log" -mtime +7 -delete
+```
+
+* `+7` -  The +7 means "greater than 7 days". That means command will find and delete log files that were last modified more than 7 days ago.
+* `-7` - The -7 means "less than 7 days". That means command will find and delete log files that were modified less than 7 days ago.
+
+
+## Automate user account creation – Write a script that takes the username as an argument, checks, if the user exists, gives the message “user already exists“ else creates a new user, adds it to a “devops“ group, and sets up a default home directory
+
+```bash
+#!/bin/bash
+if [ $# -eq 0 ]
+then
+    echo "ERROR : Username is not provided"
+    echo "Usage : ./check_user.sh <user-name>"
+    exit 1
+fi
+
+USERNAME=$1
+GROUP="devops"
+if cat /etc/passwd | grep -qw "$USERNAME"
+then
+    echo "$USERNAME already exists"
+else
+    echo "Checking group exists or not"
+    if ! getent group $GROUP >/dev/null
+    then
+        echo "Creating Group $GROUP"
+        sudo groupadd $GROUP
+    fi
+    echo "Creating Username ${USERNAME}"
+    sudo useradd -m -s /bin/bash -g ${GROUP} ${USERNAME}
+    # Set a default password (optional, force change on first login)
+    echo "$USERNAME:ChangeMe123" | sudo chpasswd
+    sudo passwd --expire "$USERNAME"
+    echo "✅ User '$USERNAME' created successfully and added to group '$GROUP'."
+    echo "ℹ️ Default password: ChangeMe123 (User must change it on first login)"
+fi
 ```
